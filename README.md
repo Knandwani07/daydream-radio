@@ -56,6 +56,8 @@ Response Returned to Browser
 <li>AWS Amplify</li>
 </ul>
 
+---
+
 ## 🖥️ Frontend
 
 The frontend is a lightweight single-page application built with:
