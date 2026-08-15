@@ -83,31 +83,43 @@ The interface is styled to resemble album liner notes and vinyl record sleeves, 
 ```text
 daydream-radio/
 │
+├── backend/
+│   ├── generate-playlist-story-lambda.md
+│   └── lambda_function.py
+│
 ├── frontend/
+│   ├── README.md
 │   └── index.html
 │
-├── backend/
-│   └── generatePlaylistStory/
-│       └── lambda_function.py
-│
-├── services-used/
-│   └── aws-services.md
-│
 ├── iam/
+│   ├── iam-inline-policy.md
 │   └── inline-policy.json
 │
 ├── policies/
+│   ├── bucket-policy.md
 │   └── bucket-policy.json
 │
-├── lessons-and-improvements/
-│   └── lessons-learned.md
+├── README.md
 │
-├── screenshots/
-│   └── app-demo.png
-│
-└── README.md
+└── learnings-and-improvements.md
 ```
 
+---
+## Folder/File Purpose
+
+
+| Path                                        | Description                                                                 |
+| ------------------------------------------- | --------------------------------------------------------------------------- |
+| `backend/lambda_function.py`                | Lambda function that generates stories using Amazon Bedrock and stores them in DynamoDB |
+| `backend/generate-playlist-story-lambda.md` | Documentation for the Lambda function                                       |
+| `frontend/index.html`                       | Frontend application UI                                                     |
+| `frontend/README.md`                        | Frontend documentation                                                      |
+| `iam/inline-policy.json`                    | IAM policy attached to the Lambda execution role                            |
+| `iam/iam-inline-policy.md`                  | Explanation of IAM permissions                                              |
+| `policies/bucket-policy.json`               | S3 bucket policy for static website hosting                                 |
+| `policies/bucket-policy.md`                 | Explanation of the bucket policy                                            |
+| `learnings-and-improvements.md`             | Key lessons learned and future enhancements                                 |
+| `README.md`                                 | Main project documentation and architecture overview                        |
 ---
 
 ## 🌐 Live Demo
@@ -132,8 +144,3 @@ https://staging.d112uiupbxweq8.amplifyapp.com/
 - 📝 **Medium:** https://medium.com/@khushinandwanii
 - 🌐 **Portfolio:** https://main.d1n4wt6uo5bfx6.amplifyapp.com/
 
----
-
-## 📜 License
-
-This project is licensed under the MIT License.
