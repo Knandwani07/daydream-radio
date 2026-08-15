@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daydream Radio: a story from your playlist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#8C6E7A;
+    --ink-2:#9C7E88;
+    --paper:#FFFDF9;
+    --paper-2:#FBF1E4;
+    --gold:#E3A97E;
+    --gold-2:#EFC29B;
+    --teal:#D98B93;
+    --line: rgba(74,50,48,0.14);
+    --text-on-ink: #4A3230;
+    --text-on-ink-dim: rgba(74,50,48,0.68);
+    --text-on-paper: #4A3230;
+    --text-on-paper-dim: rgba(74,50,48,0.62);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background: linear-gradient(120deg,
+      #FDE2E4 0%,
+      #FFF3D6 20%,
+      #E4E0F7 40%,
+      #D9F0E3 60%,
+      #FFE8D6 80%,
+      #FDE2E4 100%);
+    background-size: 400% 400%;
+    animation: driftBg 18s ease-in-out infinite;
+    color:var(--text-on-ink);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+    padding:56px 20px 80px;
+  }
+  @keyframes driftBg{
+    0%{ background-position:0% 50%; }
+    25%{ background-position:50% 80%; }
+    50%{ background-position:100% 50%; }
+    75%{ background-position:50% 20%; }
+    100%{ background-position:0% 50%; }
+  }
+  .wrap{max-width:760px; margin:0 auto;}
+
+  /* header */
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    color:#B4707E;
+    display:flex; align-items:center; gap:10px;
+    margin-bottom:18px;
+  }
+  .eyebrow::before{
+    content:"";
+    background:#B4707E !important;
+    width:22px; height:1px; background:var(--gold-2); display:inline-block;
+  }
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:500;
+    font-size:clamp(34px, 6vw, 52px);
+    line-height:1.05;
+    margin:0 0 12px;
+    letter-spacing:-0.01em;
+  }
+  h1 em{ font-style:italic; color:#C1666E; font-weight:300; }
+  .sub{
+    color:var(--text-on-ink-dim);
+    font-size:15.5px;
+    line-height:1.6;
+    max-width:52ch;
+    margin:0 0 40px;
+  }
+
+  /* card = the "sleeve" */
+  .sleeve{
+    background:var(--paper);
+    color:var(--text-on-paper);
+    border-radius:2px;
+    box-shadow: 0 24px 48px -20px rgba(74,50,48,0.22), 0 1px 0 rgba(255,255,255,0.6) inset;
+    position:relative;
+    overflow:hidden;
+  }
+  .sleeve::before{
+    content:"";
+    position:absolute; top:0; left:0; right:0; height:5px;
+    background: repeating-linear-gradient(90deg, var(--gold) 0 14px, transparent 14px 20px);
+    opacity:0.85;
+  }
+  .sleeve-inner{ padding:34px 30px 30px; }
+
+  .sleeve-head{
+    display:flex; justify-content:space-between; align-items:baseline;
+    border-bottom:1px solid rgba(36,27,15,0.14);
+    padding-bottom:16px; margin-bottom:20px;
+  }
+  .side-tag{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px; letter-spacing:0.14em; text-transform:uppercase;
+    color:var(--text-on-paper-dim);
+  }
+  .track-count{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px; color:var(--teal); font-weight:600;
+  }
+
+  /* tracklist rows */
+  #pairs{ display:flex; flex-direction:column; gap:10px; margin-bottom:6px; }
+  .pair{
+    display:grid;
+    grid-template-columns:28px 1fr 1fr 30px;
+    gap:10px;
+    align-items:center;
+  }
+  .track-num{
+    font-family:'JetBrains Mono', monospace;
+    font-size:13px;
+    color:var(--text-on-paper-dim);
+    text-align:right;
+  }
+  .pair input{
+    width:100%;
+    padding:10px 12px;
+    border:1px solid rgba(36,27,15,0.18);
+    background:rgba(255,255,255,0.5);
+    border-radius:3px;
+    font-family:'Inter', sans-serif;
+    font-size:14px;
+    color:var(--text-on-paper);
+  }
+  .pair input::placeholder{ color:rgba(36,27,15,0.38); }
+  .pair input:focus{
+    outline:none;
+    border-color:var(--teal);
+    background:#fff;
+  }
+  .pair input.mood{ font-weight:500; }
+  .remove-btn{
+    background:none; border:none; cursor:pointer;
+    color:rgba(36,27,15,0.35);
+    font-size:18px; line-height:1;
+    padding:4px;
+    transition:color 0.15s;
+  }
+  .remove-btn:hover{ color:#C1666E; }
+
+  .field-labels{
+    display:grid;
+    grid-template-columns:28px 1fr 1fr 30px;
+    gap:10px;
+    margin-bottom:8px;
+  }
+  .field-labels span{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10px; letter-spacing:0.1em; text-transform:uppercase;
+    color:var(--text-on-paper-dim);
+  }
+
+  .actions{
+    display:flex; gap:10px; flex-wrap:wrap;
+    margin-top:18px;
+  }
+  button{
+    font-family:'Inter', sans-serif;
+    font-weight:500;
+    font-size:14px;
+    cursor:pointer;
+    border-radius:3px;
+    border:none;
+    padding:11px 18px;
+    transition:transform 0.12s, opacity 0.12s;
+  }
+  button:active{ transform:scale(0.98); }
+
+  .btn-ghost{
+    background:transparent;
+    border:1px solid rgba(36,27,15,0.25);
+    color:var(--text-on-paper);
+  }
+  .btn-ghost:hover{ border-color:var(--teal); color:var(--teal); }
+
+  .btn-primary{
+    background:var(--ink);
+    color:var(--paper);
+    margin-left:auto;
+  }
+  .btn-primary:hover{ background:var(--ink-2); }
+  .btn-primary:disabled{ opacity:0.5; cursor:default; }
+
+  /* examples */
+  .examples{
+    margin-top:26px;
+    padding-top:20px;
+    border-top:1px dashed rgba(36,27,15,0.2);
+  }
+  .examples-label{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px; letter-spacing:0.1em; text-transform:uppercase;
+    color:var(--text-on-paper-dim);
+    margin-bottom:10px;
+  }
+  .example-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    background:rgba(217,139,147,0.1);
+    border:1px solid rgba(217,139,147,0.35);
+    color:var(--teal);
+    font-size:13px;
+    padding:7px 12px;
+    border-radius:20px;
+    cursor:pointer;
+    margin:0 8px 8px 0;
+    transition:background 0.15s;
+  }
+  .example-chip:hover{ background:rgba(217,139,147,0.2); }
+
+  /* output */
+  #output-zone{ margin-top:28px; }
+  .loading{
+    display:none;
+    font-family:'JetBrains Mono', monospace;
+    font-size:13px;
+    color:var(--gold-2);
+    align-items:center;
+    gap:10px;
+  }
+  .loading.active{ display:flex; }
+  .spinner{
+    width:12px; height:12px;
+    border:2px solid rgba(224,174,76,0.3);
+    border-top-color:var(--gold-2);
+    border-radius:50%;
+    animation:spin 0.8s linear infinite;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  .liner-card{
+    display:none;
+    background:var(--paper);
+    color:var(--text-on-paper);
+    border-radius:2px;
+    padding:32px 30px;
+    position:relative;
+    box-shadow: 0 20px 50px -18px rgba(0,0,0,0.5);
+  }
+  .liner-card.active{ display:block; }
+  .liner-stamp{
+    position:absolute; top:22px; right:26px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:10px; letter-spacing:0.14em; text-transform:uppercase;
+    color:var(--teal);
+    border:1px solid var(--teal);
+    padding:4px 8px;
+    border-radius:2px;
+    transform:rotate(3deg);
+    opacity:0.8;
+  }
+  .liner-title{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px; letter-spacing:0.12em; text-transform:uppercase;
+    color:var(--text-on-paper-dim);
+    margin-bottom:16px;
+  }
+  .story-text{
+    font-family:'Fraunces', serif;
+    font-size:18px;
+    line-height:1.75;
+    white-space:pre-wrap;
+    max-width:60ch;
+  }
+  .story-text::first-letter{
+    font-size:46px;
+    font-weight:600;
+    color:var(--gold);
+    float:left;
+    line-height:0.85;
+    padding-right:8px;
+    padding-top:4px;
+  }
+  .error-text{
+    font-family:'JetBrains Mono', monospace;
+    font-size:13px;
+    color:#C1666E;
+  }
+  .book-rec{
+    display:none;
+    margin-top:24px;
+    padding:16px 18px;
+    background: linear-gradient(135deg, rgba(217,139,147,0.12), rgba(227,169,126,0.14));
+    border:1px solid rgba(217,139,147,0.3);
+    border-radius:10px;
+  }
+  .book-rec.active{ display:flex; gap:14px; align-items:flex-start; }
+  .book-rec-icon{
+    flex-shrink:0;
+    width:34px; height:34px;
+    border-radius:50%;
+    background:rgba(193,102,110,0.16);
+    display:flex; align-items:center; justify-content:center;
+    font-size:17px;
+    line-height:1;
+  }
+  .book-rec-body{ flex:1; min-width:0; }
+  .book-rec-label{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:#C1666E;
+    display:block;
+    margin-bottom:5px;
+    font-weight:600;
+  }
+  .book-rec-title{
+    font-family:'Fraunces', serif;
+    font-size:15.5px;
+    font-weight:600;
+    color:var(--text-on-paper);
+    margin-bottom:3px;
+    line-height:1.35;
+  }
+  .book-rec-reason{
+    font-size:13px;
+    line-height:1.5;
+    color:var(--text-on-paper-dim);
+  }
+
+  footer{
+    text-align:center;
+    margin-top:44px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    color:var(--text-on-ink-dim);
+    letter-spacing:0.06em;
+  }
+
+  @media (max-width:520px){
+    .pair, .field-labels{ grid-template-columns:20px 1fr 1fr 24px; }
+    .sleeve-inner{ padding:24px 18px 22px; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation:none !important; transition:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="eyebrow">Side A · Mood Sequencer</div>
+  <h1>Daydream Radio<br><em>a little story, after the music.</em></h1>
+  <p class="sub">List the moods your playlist moves through, in order. You'll get a short story back that follows that exact emotional arc, beat to beat.</p>
+
+  <div class="sleeve">
+    <div class="sleeve-inner">
+      <div class="sleeve-head">
+        <span class="side-tag">Tracklist</span>
+        <span class="track-count" id="trackCount">1 track</span>
+      </div>
+
+      <div class="field-labels">
+        <span></span>
+        <span>Song (optional)</span>
+        <span>Mood</span>
+        <span></span>
+      </div>
+
+      <div id="pairs"></div>
+
+      <div class="actions">
+        <button class="btn-ghost" onclick="addPair()">+ Add track</button>
+        <button class="btn-primary" id="generateBtn" onclick="generateStory()">Generate story</button>
+      </div>
+
+      <div class="examples">
+        <div class="examples-label">Try an example</div>
+        <div id="exampleChips"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="output-zone">
+    <div class="loading" id="loading">
+      <span class="spinner"></span> writing the liner notes…
+    </div>
+
+    <div class="liner-card" id="linerCard">
+      <div class="liner-stamp">Side A</div>
+      <div class="liner-title">Liner Notes</div>
+      <div class="story-text" id="storyText"></div>
+      <div class="book-rec" id="bookRec"></div>
+    </div>
+  </div>
+
+  <footer>daydream radio · built on aws bedrock, lambda &amp; dynamodb</footer>
+</div>
+
+<script>
+// ---- CONFIG ----
+const API_URL = "YOUR_INVOKE_URL/generate";
+
+// ---- EXAMPLE PRESETS ----
+const EXAMPLES = [
+  {
+    label: "Sunday morning coffee",
+    pairs: [
+      { song: "", mood: "slow and sleepy" },
+      { song: "", mood: "warm contentment" },
+      { song: "", mood: "unhurried joy" }
+    ]
+  },
+  {
+    label: "Packing to move away",
+    pairs: [
+      { song: "", mood: "nostalgic and a little sad" },
+      { song: "", mood: "overwhelmed but determined" },
+      { song: "", mood: "nervous excitement" }
+    ]
+  },
+  {
+    label: "Storm rolling in",
+    pairs: [
+      { song: "", mood: "calm before the shift" },
+      { song: "", mood: "building tension" },
+      { song: "", mood: "release, like the first rain" }
+    ]
+  }
+];
+
+let rowId = 0;
+
+function makeRow(song = "", mood = "") {
+  rowId++;
+  const div = document.createElement("div");
+  div.className = "pair";
+  div.dataset.id = rowId;
+  div.innerHTML = `
+    <span class="track-num">${String(document.querySelectorAll('.pair').length + 1).padStart(2,'0')}</span>
+    <input class="song" placeholder="e.g. Blinding Lights" value="${song.replace(/"/g,'&quot;')}">
+    <input class="mood" placeholder="e.g. anxious energy" value="${mood.replace(/"/g,'&quot;')}">
+    <button class="remove-btn" onclick="removeRow(this)" title="Remove track">×</button>
+  `;
+  return div;
+}
+
+function renumber() {
+  document.querySelectorAll('#pairs .pair').forEach((row, i) => {
+    row.querySelector('.track-num').textContent = String(i + 1).padStart(2, '0');
+  });
+  const n = document.querySelectorAll('#pairs .pair').length;
+  document.getElementById('trackCount').textContent = n + (n === 1 ? " track" : " tracks");
+}
+
+function addPair(song = "", mood = "") {
+  document.getElementById('pairs').appendChild(makeRow(song, mood));
+  renumber();
+}
+
+function removeRow(btn) {
+  const rows = document.querySelectorAll('#pairs .pair');
+  if (rows.length <= 1) return; // keep at least one row
+  btn.closest('.pair').remove();
+  renumber();
+}
+
+function loadExample(ex) {
+  document.getElementById('pairs').innerHTML = "";
+  ex.pairs.forEach(p => addPair(p.song, p.mood));
+}
+
+function renderExampleChips() {
+  const container = document.getElementById('exampleChips');
+  EXAMPLES.forEach(ex => {
+    const chip = document.createElement('span');
+    chip.className = 'example-chip';
+    chip.textContent = ex.label;
+    chip.onclick = () => loadExample(ex);
+    container.appendChild(chip);
+  });
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function renderBookRec(raw) {
+  // Expected shape: "Title" by Author — reason   (dash character may vary)
+  const splitMatch = raw.split(/\s[—–-]\s/); // splits on em dash, en dash, or hyphen surrounded by spaces
+  let titlePart = escapeHtml(splitMatch[0] || raw);
+  titlePart = titlePart.replace(/[\[\]]/g, ''); // strip stray brackets the model sometimes adds
+  const reasonPart = splitMatch.length > 1 ? escapeHtml(splitMatch.slice(1).join(' - ')) : '';
+
+  return `
+    <div class="book-rec-icon">📖</div>
+    <div class="book-rec-body">
+      <span class="book-rec-label">If this were a book</span>
+      <div class="book-rec-title">${titlePart}</div>
+      ${reasonPart ? `<div class="book-rec-reason">${reasonPart}</div>` : ''}
+    </div>
+  `;
+}
+
+async function generateStory() {
+  const rows = document.querySelectorAll('#pairs .pair');
+  const pairs = [];
+  rows.forEach(row => {
+    const song = row.querySelector('.song').value.trim();
+    const mood = row.querySelector('.mood').value.trim();
+    if (mood) pairs.push({ song, mood });
+  });
+
+  if (pairs.length === 0) {
+    alert("Add at least one mood before generating.");
+    return;
+  }
+
+  const btn = document.getElementById('generateBtn');
+  const loading = document.getElementById('loading');
+  const card = document.getElementById('linerCard');
+
+  btn.disabled = true;
+  loading.classList.add('active');
+  card.classList.remove('active');
+
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pairs })
+    });
+    const data = await response.json();
+
+    loading.classList.remove('active');
+    card.classList.add('active');
+
+    const bookRecEl = document.getElementById('bookRec');
+
+    if (data.error) {
+      document.getElementById('storyText').innerHTML = `<span class="error-text">Error: ${data.error}</span>`;
+      bookRecEl.classList.remove('active');
+    } else {
+      document.getElementById('storyText').textContent = data.story;
+
+      if (data.bookRec) {
+        bookRecEl.innerHTML = renderBookRec(data.bookRec);
+        bookRecEl.classList.add('active');
+      } else {
+        bookRecEl.classList.remove('active');
+      }
+    }
+  } catch (err) {
+    loading.classList.remove('active');
+    card.classList.add('active');
+    document.getElementById('storyText').innerHTML = `<span class="error-text">Request failed: ${err.message}</span>`;
+    document.getElementById('bookRec').classList.remove('active');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// init
+addPair();
+renderExampleChips();
+</script>
+
+</body>
+</html>
